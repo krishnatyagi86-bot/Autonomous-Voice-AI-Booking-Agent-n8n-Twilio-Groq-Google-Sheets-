@@ -2,99 +2,19 @@
   "nodes": [
     {
       "parameters": {
-        "respondWith": "text",
-        "responseBody": "<Response>\n  <Gather input=\"speech\"\n          action=\"https://<YOUR_DOMAIN>/webhook/twilio-general-ai\"\n          method=\"POST\"\n          speechTimeout=\"auto\">\n\n    <Say voice=\"Google.en-US-Neural2-F\">\n      you want to query anything ask me question\n    </Say>\n\n  </Gather>\n</Response>",
-        "options": {
-          "responseHeaders": {
-            "entries": [
-              {
-                "name": "content-type",
-                "value": "text/xml"
-              }
-            ]
-          }
-        }
-      },
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
-      "position": [
-        560,
-        -160
-      ],
-      "name": "Respond to Webhook"
-    },
-    {
-      "parameters": {
         "httpMethod": "POST",
-        "path": "twilio-general-ai",
-        "responseMode": "responseNode",
-        "options": {}
+        "path": "twilio-call",
+        "responseMode": "responseNode"
       },
+      "id": "1",
+      "name": "Webhook Main",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
+      "typeVersion": 2,
       "position": [
-        864,
-        -160
+        -1000,
+        300
       ],
-      "name": "Webhook1",
-      "webhookId": "<YOUR_WEBHOOK_ID_1>"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{$json.message}}",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        1344,
-        -160
-      ],
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
-        "model": "llama-3.1-8b-instant",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
-      "typeVersion": 1,
-      "position": [
-        1328,
-        48
-      ],
-      "name": "Groq Chat Model",
-      "credentials": {
-        "groqApi": {
-          "id": "<YOUR_GROQ_CREDENTIAL_ID>",
-          "name": "Groq account"
-        }
-      }
-    },
-    {
-      "parameters": {},
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.3,
-      "position": [
-        1488,
-        48
-      ],
-      "name": "Simple Memory"
-    },
-    {
-      "parameters": {
-        "mode": "raw",
-        "jsonOutput": "={\n  \"message\": \"={{$json.body.SpeechResult || 'hello'}}\",\n  \"sessionId\": \"={{$json.body.CallSid}}\"\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        1072,
-        -160
-      ],
-      "name": "Edit Fields"
+      "webhookId": "twilio-call"
     },
     {
       "parameters": {
@@ -102,45 +22,30 @@
           "values": [
             {
               "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.body.Digits }}",
+                    "leftValue": "={{ String($json.body.Digits || '') }}",
                     "rightValue": "1",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
                     }
                   }
-                ],
-                "combinator": "and"
+                ]
               }
             },
             {
               "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.body.Digits }}",
+                    "leftValue": "={{ String($json.body.Digits || '') }}",
                     "rightValue": "2",
                     "operator": {
                       "type": "string",
-                      "operation": "equals",
-                      "name": "filter.operator.equals"
+                      "operation": "equals"
                     }
                   }
-                ],
-                "combinator": "and"
+                ]
               }
             }
           ]
@@ -149,475 +54,381 @@
           "fallbackOutput": "extra"
         }
       },
+      "id": "2",
+      "name": "Switch",
       "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.4,
+      "typeVersion": 3,
       "position": [
-        -96,
-        304
-      ],
-      "name": "Switch"
+        -760,
+        300
+      ]
     },
     {
       "parameters": {
         "respondWith": "text",
-        "responseBody": "<Response>\n  <Gather numDigits=\"1\" action=\"https://<YOUR_DOMAIN>/webhook/twilio-call\" method=\"POST\">\n    <Say voice=\"Google.en-US-Neural2-F\">\n      Hello and welcome to SmileCare Dental Clinic.\n      Press 1 to hear clinic information.\n      Press 2 to book an appointment with our smart assistant.\n      Please press your choice now.\n    </Say>\n  </Gather>\n  <Say voice=\"Google.en-US-Neural2-F\">\n    We did not receive any input. Goodbye.\n  </Say>\n</Response>",
+        "responseBody": "<Response>\n<Gather input=\"speech\" action=\"https://YOUR-NGROK/webhook/twilio-general-ai\" method=\"POST\" speechTimeout=\"auto\" timeout=\"6\" language=\"en-IN\">\n<Say voice=\"alice\">Ask me anything.</Say>\n</Gather>\n</Response>",
         "options": {
           "responseHeaders": {
             "entries": [
               {
-                "name": "content-type",
+                "name": "Content-Type",
                 "value": "text/xml"
               }
             ]
           }
         }
       },
+      "id": "3",
+      "name": "General AI Start",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
+      "typeVersion": 1,
       "position": [
-        528,
-        672
-      ],
-      "name": "Respond to Webhook4"
+        -420,
+        120
+      ]
     },
     {
       "parameters": {
         "respondWith": "text",
-        "responseBody": "=<Response>\n  <Gather input=\"speech\"\n          action=\"https://<YOUR_DOMAIN>/webhook/twilio-general-ai\"\n          method=\"POST\"\n          speechTimeout=\"auto\"\n          timeout=\"6\"\n          language=\"en-IN\">\n\n    <Say voice=\"Google.en-US-Neural2-F\">\n      {{ $json.output || \"Hello, how can I help you?\" }}\n    </Say>\n\n  </Gather>\n\n  <Redirect method=\"POST\">\n    https://<YOUR_DOMAIN>/webhook/twilio-general-ai\n  </Redirect>\n</Response>",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
-      "position": [
-        1808,
-        -160
-      ],
-      "name": "Respond to Webhook1"
-    },
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "twilio-call",
-        "responseMode": "responseNode",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
-      "position": [
-        -400,
-        336
-      ],
-      "name": "Webhook3",
-      "webhookId": "<YOUR_WEBHOOK_ID_3>"
-    },
-    {
-      "parameters": {
-        "respondWith": "text",
-        "responseBody": "<Response>\n  <Gather input=\"speech\"\n          action=\"https://<YOUR_DOMAIN>/webhook/twilio-ai-chat\"\n          method=\"POST\"\n          speechTimeout=\"auto\"\n          timeout=\"6\"\n          language=\"en-IN\">\n\n    <Say voice=\"Google.en-US-Neural2-F\">\n      Welcome to SmileCare Dental Clinic booking assistant.\n      Please tell me your full name.\n    </Say>\n\n  </Gather>\n\n  <Redirect method=\"POST\">\n    https://<YOUR_DOMAIN>/webhook/twilio-ai-chat\n  </Redirect>\n</Response>",
+        "responseBody": "<Response>\n<Gather input=\"speech\" action=\"https://YOUR-NGROK/webhook/twilio-ai-chat\" method=\"POST\" speechTimeout=\"auto\" timeout=\"8\" language=\"en-IN\">\n<Say voice=\"alice\">Welcome to SmileCare. Please tell me your full name.</Say>\n</Gather>\n</Response>",
         "options": {
           "responseHeaders": {
             "entries": [
               {
-                "name": "content-type",
+                "name": "Content-Type",
                 "value": "text/xml"
               }
             ]
           }
         }
       },
+      "id": "4",
+      "name": "Booking Start",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
+      "typeVersion": 1,
       "position": [
-        656,
-        288
-      ],
-      "name": "Respond to Webhook6"
+        -420,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<Response>\n<Gather numDigits=\"1\" action=\"https://YOUR-NGROK/webhook/twilio-call\" method=\"POST\">\n<Say voice=\"alice\">\nWelcome to SmileCare Dental Clinic.\nPress 1 for AI Assistant.\nPress 2 for Appointment Booking.\n</Say>\n</Gather>\n<Say>No input received. Goodbye.</Say>\n</Response>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/xml"
+              }
+            ]
+          }
+        }
+      },
+      "id": "5",
+      "name": "Main Menu",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        520
+      ]
     },
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "twilio-ai-chat",
-        "responseMode": "responseNode",
-        "options": {}
+        "path": "twilio-general-ai",
+        "responseMode": "responseNode"
       },
+      "id": "6",
+      "name": "Webhook General AI",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
+      "typeVersion": 2,
       "position": [
-        960,
-        304
+        -60,
+        120
       ],
-      "name": "Webhook4",
-      "webhookId": "<YOUR_WEBHOOK_ID_4>"
+      "webhookId": "twilio-general-ai"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n\"message\":\"={{$json.body.SpeechResult || 'hello'}}\",\n\"sessionId\":\"={{$json.body.CallSid}}\"\n}"
+      },
+      "id": "7",
+      "name": "Set General AI",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        180,
+        120
+      ]
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $json.message }}",
-        "options": {
-          "systemMessage": "=You are SmileCare Dental Clinic's voice booking assistant answering phone calls.\nYour only job is to help callers book appointments.\n\nCURRENT DATE AND TIME: {{new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}} IST.\nClinic Hours: Monday to Saturday, 9:00 AM to 8:00 PM. Closed Sundays.\n\nSpeak in short, natural, friendly sentences suitable for phone calls. Ask only ONE question at a time.\n\nCollect booking details one at a time in this exact order:\n1. Full Name\n2. Email Address\n3. Required Treatment / Service\n4. Preferred Date\n5. Preferred Time\n\nRules:\n* DO NOT ask for the caller's phone number. Our system captures this automatically.\n* Keep replies under 20 words when possible.\n* If all details are collected, respond ONLY with the exact JSON format below. Do not add any conversational text outside the JSON.\n\nExpected Output Format at the end of call:\n{\n  \"status\": \"BOOKING_COMPLETE\",\n  \"name\": \"customer name\",\n  \"email\": \"email\",\n  \"service\": \"service name\",\n  \"date\": \"friendly date (e.g., May 16th)\",\n  \"time\": \"friendly time (e.g., 4:00 PM)\",\n  \"booking_id\": \"{{ $json.body.CallSid || Math.floor(100000 + Math.random() * 900000) }}\",\n  \"message\": \"booking completed successfully\"\n}"
-        }
+        "text": "={{$json.message}}"
       },
+      "id": "8",
+      "name": "AI Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
+      "typeVersion": 3,
       "position": [
-        1600,
-        304
-      ],
-      "name": "AI Agent2"
+        420,
+        120
+      ]
     },
     {
       "parameters": {
-        "options": {}
+        "model": "llama-3.1-8b-instant"
       },
+      "id": "9",
+      "name": "Groq Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        1552,
-        496
+        420,
+        300
       ],
-      "name": "Groq Chat Model2",
       "credentials": {
         "groqApi": {
-          "id": "<YOUR_GROQ_CREDENTIAL_ID>",
-          "name": "Groq account"
+          "id": "YOUR_ID",
+          "name": "Groq"
         }
       }
     },
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "={{ $json.sessionId }}",
-        "contextWindowLength": 10
+        "sessionKey": "={{$json.sessionId}}"
       },
+      "id": "10",
+      "name": "Memory",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.3,
+      "typeVersion": 1,
       "position": [
-        1696,
-        496
+        620,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=<Response>\n<Gather input=\"speech\" action=\"https://YOUR-NGROK/webhook/twilio-general-ai\" method=\"POST\" speechTimeout=\"auto\" timeout=\"6\">\n<Say voice=\"alice\">{{$json.output}}</Say>\n</Gather>\n</Response>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/xml"
+              }
+            ]
+          }
+        }
+      },
+      "id": "11",
+      "name": "General AI Reply",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        860,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "twilio-ai-chat",
+        "responseMode": "responseNode"
+      },
+      "id": "12",
+      "name": "Webhook Booking",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        520
       ],
-      "name": "Simple Memory2"
+      "webhookId": "twilio-ai-chat"
     },
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "={\n  \"message\": \"={{ $json.body.SpeechResult || '' }}\",\n  \"sessionId\": \"={{ $json.body.CallSid || '' }}\"\n}",
-        "options": {}
+        "jsonOutput": "={\n\"message\":\"={{$json.body.SpeechResult || ''}}\",\n\"sessionId\":\"={{$json.body.CallSid}}\"\n}"
       },
+      "id": "13",
+      "name": "Set Booking",
       "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
+      "typeVersion": 3,
       "position": [
-        1248,
-        304
-      ],
-      "name": "Edit Fields2"
+        180,
+        520
+      ]
     },
     {
       "parameters": {
-        "jsCode": "let txt = $json.output || \"\";\n\nconst jsonMatch = txt.match(/\\{[\\s\\S]*\\}/);\n\nif (!jsonMatch) {\n  return [{\n    json: {\n      reply: txt,\n      isComplete: false\n    }\n  }];\n}\n\nconst data = JSON.parse(jsonMatch[0]);\n\nconst webhookNode = $('Webhook4').first().json;\n\nconst userPhone =\n  webhookNode.body?.From ||\n  webhookNode.From ||\n  '';\n\nreturn [{\n  json: {\n    booking_id: data.booking_id,\n    name: data.name,\n    phone: userPhone,\n    email: data.email,\n    service: data.service,\n    date: data.date,\n    time: data.time,\n    message: data.message,\n    status: data.status || 'BOOKED',\n    created_at: new Date().toISOString(),\n    isComplete: true\n  }\n}];"
+        "promptType": "define",
+        "text": "={{$json.message}}",
+        "options": {
+          "systemMessage": "You are SmileCare Dental Assistant.\nAsk one question at a time.\nCollect:\n1 Name\n2 Email\n3 Service\n4 Date\n5 Time\n\nWhen complete return ONLY JSON:\n{\n\"status\":\"BOOKING_COMPLETE\",\n\"name\":\"\",\n\"email\":\"\",\n\"service\":\"\",\n\"date\":\"\",\n\"time\":\"\",\n\"booking_id\":\"AUTO\",\n\"message\":\"booking completed\"\n}"
+        }
       },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "id": "14",
+      "name": "Booking AI",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
       "position": [
-        2192,
-        192
-      ],
-      "name": "Code in JavaScript1"
+        420,
+        520
+      ]
     },
     {
       "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "<YOUR_GOOGLE_SHEET_ID>",
-          "mode": "list",
-          "cachedResultName": "Calling Agent",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/<YOUR_GOOGLE_SHEET_ID>/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Agent_Lead",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/<YOUR_GOOGLE_SHEET_ID>/edit#gid=0"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "Booking ID": "={{$json[\"booking_id\"]}}",
-            "Name": "={{$json[\"name\"]}}",
-            "Phone": "={{$json[\"phone\"]}}",
-            "Email": "={{$json[\"email\"]}}",
-            "Service": "={{$json[\"service\"]}}",
-            "Date": "={{$json[\"date\"]}}",
-            "Time": "={{$json[\"time\"]}}",
-            "Message": "={{$json[\"message\"]}}",
-            "Status": "={{$json[\"status\"]}}",
-            "Created At": "={{$json[\"created_at\"]}}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "Booking ID",
-              "displayName": "Booking ID",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Name",
-              "displayName": "Name",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Phone",
-              "displayName": "Phone",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Email",
-              "displayName": "Email",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Service",
-              "displayName": "Service",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Date",
-              "displayName": "Date",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Time",
-              "displayName": "Time",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Message",
-              "displayName": "Message",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Status",
-              "displayName": "Status",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Created At",
-              "displayName": "Created At",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
+        "model": "llama-3.1-8b-instant"
       },
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.7,
+      "id": "15",
+      "name": "Booking Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
       "position": [
-        2448,
-        192
+        420,
+        720
       ],
-      "name": "Append row in sheet1",
       "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "<YOUR_GOOGLE_SHEETS_CREDENTIAL_ID>",
-          "name": "Google Sheets account"
+        "groqApi": {
+          "id": "YOUR_ID",
+          "name": "Groq"
         }
       }
     },
     {
       "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{$json.sessionId}}"
+      },
+      "id": "16",
+      "name": "Booking Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1,
+      "position": [
+        620,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let txt = $json.output || '';\nconst match = txt.match(/\\{[\\s\\S]*\\}/);\n\nif(!match){\nreturn [{json:{reply:txt,isComplete:false}}];\n}\n\nlet data = JSON.parse(match[0]);\n\nreturn [{\njson:{\nstatus:data.status,\nname:data.name,\nemail:data.email,\nservice:data.service,\ndate:data.date,\ntime:data.time,\nbooking_id:data.booking_id,\nmessage:data.message,\nisComplete:true\n}\n}];"
+      },
+      "id": "17",
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        520
+      ]
+    },
+    {
+      "parameters": {
         "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
           "conditions": [
             {
-              "leftValue": "={{ $json.output }}",
+              "leftValue": "={{$json.status}}",
               "rightValue": "BOOKING_COMPLETE",
               "operator": {
                 "type": "string",
-                "operation": "contains"
+                "operation": "equals"
               }
             }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
+          ]
+        }
       },
+      "id": "18",
+      "name": "IF Complete",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
+      "typeVersion": 2,
       "position": [
-        1920,
-        304
-      ],
-      "name": "If1"
+        920,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "YOUR_SHEET_ID",
+        "sheetName": "Sheet1",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{$json.name}}",
+            "Email": "={{$json.email}}",
+            "Service": "={{$json.service}}",
+            "Date": "={{$json.date}}",
+            "Time": "={{$json.time}}"
+          }
+        }
+      },
+      "id": "19",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1160,
+        420
+      ]
     },
     {
       "parameters": {
         "respondWith": "text",
-        "responseBody": "<Response>\n  <Gather input=\"speech\"\n          action=\"https://<YOUR_DOMAIN>/webhook/twilio-ai-chat\"\n          method=\"POST\"\n          speechTimeout=\"auto\"\n          timeout=\"8\">\n\n    <Say voice=\"Google.en-US-Neural2-F\">\n      Thank you {{ $json[\"name\"] }}. Your dental appointment booking has been completed successfully and your details are saved. Is there anything else I can help you with?\n    </Say>\n\n  </Gather>\n\n  <Say voice=\"Google.en-US-Neural2-F\">\n    Thank you for calling SmileCare. Goodbye.\n  </Say>\n\n  <Hangup/>\n</Response>",
-        "options": {}
+        "responseBody": "=<Response>\n<Say voice=\"alice\">Thank you {{$json.name}}. Your appointment is booked successfully.</Say>\n<Hangup/>\n</Response>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/xml"
+              }
+            ]
+          }
+        }
       },
+      "id": "20",
+      "name": "Booking Success",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
+      "typeVersion": 1,
       "position": [
-        3056,
-        192
-      ],
-      "name": "Respond to Webhook8"
+        1400,
+        420
+      ]
     },
     {
       "parameters": {
         "respondWith": "text",
-        "responseBody": "=<Response>\n <Gather input=\"speech\"\n        language=\"en-IN\"\n          action=\"https://<YOUR_DOMAIN>/webhook/twilio-ai-chat\"\n          method=\"POST\"\n          speechTimeout=\"auto\"\n          timeout=\"8\">\n\n    <Say voice=\"Google.en-US-Neural2-F\">\n      {{ $json.reply || $json.output }}\n    </Say>\n\n  </Gather>\n\n  <Say voice=\"Google.en-US-Neural2-F\">\n    I did not hear anything.\n    Goodbye.\n  </Say>\n\n  <Hangup/>\n</Response>",
-        "options": {}
+        "responseBody": "=<Response>\n<Gather input=\"speech\" action=\"https://YOUR-NGROK/webhook/twilio-ai-chat\" method=\"POST\" speechTimeout=\"auto\" timeout=\"8\">\n<Say voice=\"alice\">{{$json.reply}}</Say>\n</Gather>\n</Response>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/xml"
+              }
+            ]
+          }
+        }
       },
+      "id": "21",
+      "name": "Booking Continue",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5,
+      "typeVersion": 1,
       "position": [
-        2736,
-        320
-      ],
-      "name": "Respond to Webhook7"
+        1160,
+        660
+      ]
     }
   ],
   "connections": {
-    "Webhook1": {
-      "main": [
-        [
-          {
-            "node": "Edit Fields",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Groq Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Simple Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields": {
-      "main": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Switch": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Respond to Webhook6",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Respond to Webhook4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Webhook3": {
+    "Webhook Main": {
       "main": [
         [
           {
@@ -628,106 +439,180 @@
         ]
       ]
     },
-    "Webhook4": {
+    "Switch": {
       "main": [
         [
           {
-            "node": "Edit Fields2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent2": {
-      "main": [
-        [
-          {
-            "node": "If1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Groq Chat Model2": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent2",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Simple Memory2": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent2",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields2": {
-      "main": [
-        [
-          {
-            "node": "AI Agent2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code in JavaScript1": {
-      "main": [
-        [
-          {
-            "node": "Append row in sheet1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Append row in sheet1": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook8",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If1": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript1",
+            "node": "General AI Start",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Respond to Webhook7",
+            "node": "Booking Start",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Main Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook General AI": {
+      "main": [
+        [
+          {
+            "node": "Set General AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set General AI": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "General AI Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Booking": {
+      "main": [
+        [
+          {
+            "node": "Set Booking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Booking": {
+      "main": [
+        [
+          {
+            "node": "Booking AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Booking Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Booking AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Booking Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Booking AI",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Booking AI": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "IF Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Complete": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Booking Continue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Booking Success",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
-  },
-  "pinData": {},
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "<YOUR_INSTANCE_ID>"
   }
 }
-```</PLACEHOLDER>
