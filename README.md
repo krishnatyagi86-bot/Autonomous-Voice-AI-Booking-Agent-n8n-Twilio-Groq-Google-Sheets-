@@ -47,7 +47,7 @@ AI collects:
 - Email
 - Dental Service
 - Appointment Date
-- Appointment Time
+- Appointment Time.
 
 After collecting all information:
 
